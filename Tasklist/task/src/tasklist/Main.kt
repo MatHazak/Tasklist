@@ -1,10 +1,10 @@
 package tasklist
 
 fun main() {
-    val tasks = mutableListOf<List<String>>()
+    val tasks = mutableListOf<List<Task>>()
     while (true) {
         when (getAction()) {
-            Action.ADD -> getTask(tasks)
+            Action.ADD -> addTask(tasks)
             Action.PRINT -> printTasks(tasks)
             Action.END -> break
         }
@@ -26,7 +26,7 @@ fun getAction(): Action {
     return action
 }
 
-fun printTasks(tasks: MutableList<List<String>>) {
+fun printTasks(tasks: MutableList<List<Task>>) {
     if (tasks.isEmpty()) {
         println("No tasks have been input")
         return
@@ -40,8 +40,8 @@ fun printTasks(tasks: MutableList<List<String>>) {
     }
 }
 
-fun getTask(tasks: MutableList<List<String>>) {
-    val task = mutableListOf<String>()
+fun addTask(tasks: MutableList<List<Task>>) {
+    val task = mutableListOf<Task>()
     println("Input a new task (enter a blank line to end):")
     while (true) {
         val line = readln().trimIndent()
@@ -57,3 +57,5 @@ enum class Action(val noun: String) {
     PRINT("print"),
     END("end"),
 }
+
+data class Task(val priority: Char, val date: String, val time: String, val task: String)
