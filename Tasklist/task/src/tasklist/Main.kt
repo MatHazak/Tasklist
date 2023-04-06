@@ -1,12 +1,15 @@
 package tasklist
 
 import kotlinx.datetime.*
+
 fun main() {
     val tasks = mutableListOf<Task>()
     while (true) {
         when (getAction()) {
             Action.ADD -> addTask(tasks)
             Action.PRINT -> printTasks(tasks)
+            Action.EDIT -> editTask(tasks)
+            Action.DELETE -> deleteTask(tasks)
             Action.END -> break
         }
     }
@@ -16,29 +19,17 @@ fun main() {
 fun getAction(): Action {
     var action: Action? = null
     while (action == null) {
-        println("Input an action (add, print, end):")
+        println("Input an action (add, print, edit, delete, end):")
         when (readln()) {
             Action.ADD.noun -> action = Action.ADD
             Action.PRINT.noun -> action = Action.PRINT
+            Action.EDIT.noun -> action = Action.EDIT
+            Action.DELETE.noun -> action = Action.DELETE
             Action.END.noun -> action = Action.END
             else -> println("The input action is invalid")
         }
     }
     return action
-}
-
-fun printTasks(tasks: MutableList<Task>) {
-    if (tasks.isEmpty()) {
-        println("No tasks have been input")
-        return
-    }
-    for (i in tasks.indices) {
-        println("%-2d %s %s %S".format(i + 1, tasks[i].date, tasks[i].time, tasks[i].priority))
-        for (line in tasks[i].description) {
-            println("%2c %s".format(' ', line))
-        }
-        println()
-    }
 }
 
 fun addTask(tasks: MutableList<Task>) {
@@ -47,6 +38,92 @@ fun addTask(tasks: MutableList<Task>) {
     val time = getTaskTime()
     val description = getTaskDescription()
     if (description.isNotEmpty()) tasks.add(Task(priority, date, time, description))
+}
+
+fun printTasks(tasks: MutableList<Task>) {
+    if (tasks.isEmpty()) {
+        println("No tasks have been input")
+        return
+    }
+    for (i in tasks.indices) {
+        val due = getDueTag(tasks[i])
+        println("%-2d %s %s %S %S".format(i + 1, tasks[i].date, tasks[i].time, tasks[i].priority, due))
+        for (line in tasks[i].description) {
+            println("%2c %s".format(' ', line))
+        }
+        println()
+    }
+}
+
+fun editTask(tasks: MutableList<Task>) {
+    printTasks(tasks)
+    if (tasks.isEmpty()) return
+    while (true) {
+        println("Input the task number (1-${tasks.size}):")
+        try {
+            val number = readln().toInt()
+            updateTask(tasks[number - 1])
+            println("The task is changed")
+            break
+        } catch (e: RuntimeException) {
+            println("Invalid task number")
+        }
+    }
+}
+
+fun deleteTask(tasks: MutableList<Task>) {
+    printTasks(tasks)
+    if (tasks.isEmpty()) return
+    while (true) {
+        println("Input the task number (1-${tasks.size}):")
+        try {
+            val number = readln().toInt()
+            tasks.removeAt(number - 1)
+            println("The task is deleted")
+            break
+        } catch (e: RuntimeException) {
+            println("Invalid task number")
+        }
+    }
+}
+
+fun updateTask(task: Task) {
+    while (true) {
+        println("Input a field to edit (priority, date, time, task):")
+        when (readln().lowercase()) {
+            "priority" -> {
+                task.priority = getTaskPriority()
+                break
+            }
+            "date" -> {
+                task.date = getTaskDate()
+                break
+            }
+            "time" -> {
+                task.time = getTaskTime()
+                break
+            }
+            "task" -> {
+                val newDescription = getTaskDescription()
+                if (newDescription.isNotEmpty())
+                    task.description = newDescription
+                break
+            }
+            else -> println("Invalid field")
+        }
+    }
+}
+
+fun getDueTag(task: Task): Char {
+    val (y, m, d) = task.date.split('-')
+    val taskDate = LocalDate(y.toInt(), m.toInt(), d.toInt())
+    val currentDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val duration = currentDate.daysUntil(taskDate)
+    return when {
+        duration < 0 -> 'O'
+        duration == 0 -> 'T'
+        else -> 'I'
+    }
 }
 
 fun getTaskDescription(): List<String> {
@@ -106,7 +183,9 @@ fun getTaskPriority(): Char {
 enum class Action(val noun: String) {
     ADD("add"),
     PRINT("print"),
+    EDIT("edit"),
+    DELETE("delete"),
     END("end"),
 }
 
-data class Task(val priority: Char, val date: String, val time: String, val description: List<String>)
+data class Task(var priority: Char, var date: String, var time: String, var description: List<String>)
