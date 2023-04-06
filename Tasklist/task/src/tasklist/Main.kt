@@ -45,13 +45,10 @@ fun printTasks(tasks: MutableList<Task>) {
         println("No tasks have been input")
         return
     }
+    Draw.header()
     for (i in tasks.indices) {
-        val due = getDueTag(tasks[i])
-        println("%-2d %s %s %S %S".format(i + 1, tasks[i].date, tasks[i].time, tasks[i].priority, due))
-        for (line in tasks[i].description) {
-            println("%2c %s".format(' ', line))
-        }
-        println()
+        Draw.task(i + 1, tasks[i])
+        Draw.horizontalLine()
     }
 }
 
@@ -111,18 +108,6 @@ fun updateTask(task: Task) {
             }
             else -> println("Invalid field")
         }
-    }
-}
-
-fun getDueTag(task: Task): Char {
-    val (y, m, d) = task.date.split('-')
-    val taskDate = LocalDate(y.toInt(), m.toInt(), d.toInt())
-    val currentDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-    val duration = currentDate.daysUntil(taskDate)
-    return when {
-        duration < 0 -> 'O'
-        duration == 0 -> 'T'
-        else -> 'I'
     }
 }
 
