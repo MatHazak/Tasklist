@@ -2,6 +2,7 @@ package tasklist
 
 fun main() {
     val taskList = TaskList()
+    taskList.tasks = DataUtil.readData()
     while (true) {
         when (getAction()) {
             Action.ADD -> taskList.addTask()
@@ -11,6 +12,7 @@ fun main() {
             Action.END -> break
         }
     }
+    DataUtil.writeData(taskList.tasks)
     println("Tasklist exiting!")
 }
 

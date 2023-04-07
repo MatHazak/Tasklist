@@ -4,7 +4,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 
 class TaskList {
-    private val tasks = mutableListOf<Task>()
+    var tasks = mutableListOf<Task>()
 
     fun addTask() {
         val priority = getTaskPriority()
